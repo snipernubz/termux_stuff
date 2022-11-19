@@ -8,6 +8,6 @@ git wget and dialog installed
 
 `
 termux-setup-storage
-pkg update 
+pkg update -y
 pkg install git wget dialog
 `
