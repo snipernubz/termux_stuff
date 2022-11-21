@@ -19,4 +19,41 @@ echo -e "settings appended to default.pa"
 
 srcpass=$(dialog --inputbox "Set password for icecast sources defaults to 'spog'" 0 0 'spog' --output-fd 1)
 
-# <source-password>hackme</source-password> for icecast
+sed 's/hackme/$srcpass/1' $PREFIX/etc/icecast.xml
+
+echo -e "set icecast source password"
+echo -e "makeing log directory for icecast"
+
+mkdir $PREFIX/var/log/icecast
+
+echo -e "makeing startup script"
+
+touch pa_to_ice.sh
+cat << EOF > pa_to_ice.sh
+#!/bin/bash
+
+echo -e "starting pulseaudio"
+pulseaudio --start
+
+echo "started pulseaudio"
+
+echo -e "starting icecast"
+
+icecast -c $PREFIX/etc/icecast.xml
+
+echo -e "starting stream"
+
+parec -d $sinkname.monitor --format s16le | ffmpeg -f s16le -i pipe:0 -acodec libmp3lame -ab 705k -ac 1 -content_type audio/mpeg -f mp3 icecast://source:$srcpass@127.0.0.1:8000/termux &
+
+echo "
+stream started
+connect to it at 
+http://127.0.0.1:8000/termux
+audio sent to the '$sinkname' will be streamed
+NOTE: AUDIO WILL SOUND DISTORTED
+"
+EOF
+
+chmod +x pa_to_ice.sh
+echo "startup file made"
+echo "all done, Enjoy!"
