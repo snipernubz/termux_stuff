@@ -2,17 +2,21 @@
 
 pkg update
 echo "installing pulseaudio ffmpeg and icecast"
+
 pkg install pulseaudio ffmpeg icecast 
+echo -e "adding commands to default pulseaudio config"
+
+sinkname=$(dialog --inputbox "Name for icecast sink, defaults to 'ice'" 0 0 'ice' --output-fd 1)
+sinkdesc=$(dialog --inputbox "Description for icecast sink, defaults to 'ice_desc'" 0 0 'ice_desc' --output-fd 1)
 
 echo "
-# icecast settings
 
-# null sinks
-load-module module-null-sink sink_name=pogs rate=44100 sink_properties=device.description=pog
-load-module module-null-sink sink_name=poggers sink_properties=device.description=pogger rate=44100
+# icecast sink
+load-module module-null-sink sink_name=$sinkname rate=44100 sink_properties=device.description=$sink_desc
 
-# loopback
-load-module module-loopback source=pogs.monitor sink=OpenSL_ES_sink
 " >> $PREFIX/etc/pulse/default.pa
+echo -e "settings appended to default.pa"
+
+srcpass=$(dialog --inputbox "Set password for icecast sources defaults to 'spog'" 0 0 'spog' --output-fd 1)
 
 # <source-password>hackme</source-password> for icecast
